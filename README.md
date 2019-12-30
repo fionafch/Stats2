@@ -1,9 +1,10 @@
 # Stats2
 Material complementario para un curso de Estadística II de FCE-UBA
 
-*30/12/19*
 
-*Estado: Carga de los archivos iniciales que tenía en otras carpetas.*
+
+**Estado: Carga de los archivos iniciales que tenía en otras carpetas.
+  Última edición: 30/12/19**
 
 _Archivos:_
 
