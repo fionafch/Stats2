@@ -1,4 +1,4 @@
-# Stats2
+# Estadística 2 en R 
 Material complementario para un curso de Estadística II de FCE-UBA
 
 
