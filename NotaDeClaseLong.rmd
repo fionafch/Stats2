@@ -378,10 +378,10 @@ PlotSimulReps.T <- function(n, m.opt, p.rows, p.cols){
   # p.row: numero de filas en el plot dividido
   # p.col: numero de columnas en el plot dividido
   # restriccion: length(m.opt) = p.row * p.col
-  if(length(n.opt)<9){p.cols.def<-2} else {p.cols.def<-3}
+  if(length(m.opt)<9){p.cols.def<-2} else {p.cols.def<-3}
   if(missing(p.rows) | missing(p.cols)){
     p.cols = p.cols.def
-    p.rows = ceiling(length(n.opt)/p.cols.def)}
+    p.rows = ceiling(length(m.opt)/p.cols.def)}
   par(mfrow=c(p.rows,p.cols), mar=c(2,2,2,2))
   if(missing(p.rows) | missing(p.cols)){
    p.cols = 2
