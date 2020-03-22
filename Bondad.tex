@@ -1,14 +1,18 @@
 \documentclass[12pt,a4paper]{article}
-	\usepackage[top=4cm, bottom=4cm, left=3cm, right=3cm]{geometry}
+	\usepackage[top=3.5cm, bottom=3.5cm, left=3cm, right=3cm]{geometry}
 	\usepackage{amsmath}
 	\usepackage{amssymb}
 	\usepackage{amsthm}
 	\usepackage{tikz}
 	\usepackage{listings}
+	\usepackage{booktabs}
 	\usepackage{color}
 %	\usepackage{mathpazo}
 	\usepackage[it,medium]{titlesec}
 	\setlength{\parskip}{1em}
+
+	\font\domino=domino
+	\def\die#1{{\domino#1}}
 
 % Falta demostracion del estadistico del test ji Cuadrado
 % Falta como usar en R
@@ -16,8 +20,6 @@
 \title{\textsc{\huge{inferencia no paramétrica}}}
 \author{Estadística II\footnote{Curso a cargo de la profesora Silvia Vietri en FCE-UBA. Se agradece la colaboración de Fiona Franco Churruarín en la elaboración de esta nota de clase.}}
 \date{\today}
-
-
 
 \begin{document}
 			\definecolor{GreenR}{rgb}{0.38, 0.63, 0.38}
@@ -43,14 +45,20 @@
 		\begin{abstract}
 
 Se estudiará una introducción a las técnicas de inferencia no paramétrica. La Sección 1 es una introducción. En la Sección 2 se cubre Bondad de Ajuste, referente a la unidad XX y en la Sección 3, Independencia de Atributos, unidad XX del programa de la materia. En ambas secciones se cubrirán ejemplos en el software estadístico \textsf{R}. La Sección 4 es un anexo.
+
 		\end{abstract}
+
 	\newpage
+
 	\pagenumbering{arabic}
 
 \section{Introducción}
-Hasta ahora, se han estudiado métodos de inferencia paramétrica. A grandes rasgos, el procedimiento consistía en hacer pruebas acerca de los \textit{parámetros} de una distribución poblacional --que se suponía conocida-- a partir de información provista por una muestra aleatoria. Por ejemplo, se intentaba estimar la media o la varianza poblacional, una proporción poblacional, o el cociente de varianzas. Se exigía robustez en las técnicas inferenciales para que vulneraciones de los supuestos de la distribución no alterasen significativamente los resultados de las estimaciones o inferencias.
 
-Para evitar el riesgo de tomar una decisión equivocada a partir de una inferencia errónea --por el hecho de partir de una especificación errónea del modelo estadístico que siguen los datos-- se puede recurrir a la utilización de contrastes no paramétricos; estos no hacen ningún supuesto acerca de la distribución de probabilidad de la población (llamada \textit{distribución subyacente}) de la que surge la muestra aleatoria.
+Hasta ahora, se han estudiado métodos de inferencia paramétrica. A grandes rasgos, el procedimiento consistía en hacer pruebas acerca de los \textit{parámetros} de una distribución poblacional --que se suponía conocida-- a partir de información provista por una muestra aleatoria. Por ejemplo, se intentaba estimar la media o la varianza poblacional, una proporción poblacional, o el cociente de varianzas. En este contexto, era deseable que las técnicas inferenciales fueran robustas para que vulneraciones de los supuestos de la distribución no alterasen significativamente los resultados de las estimaciones o inferencias. Es decir, en el paradigma de la inferencia paramétrica es deseable que los resultados que se obtengan no varíen mucho cuando la distribución subyacente a los datos no sea la que se está suponiendo.
+
+Por el hecho de partir de una especificación errónea del modelo estadístico que siguen los datos, se corre el riesgo de tomar una decisión equivocada a partir de una inferencia errónea. Ahora bien ?`qué significa esto? Un ejemplo concreto --correspondiente a Bondad de Ajuste-- se da en los mercados financieros. Es muy común utilizar la distribución normal para modelar los retornos de un activo financiero (una acción, un bono, el tipo de cambio entre distintas monedas, entre otros). Es conocido que la distribución normal está centrada en su media y que entre tres desvíos estándar a derecha y a izquierda de su media acumula 99.73\% de probabilidad. Sin embargo, es un hecho estilizado dentro de la literatura de finanzas muchos activos financieros registran retornos de más de 3 desvíos estándar más frecuentemente que lo que una distribución normal implica. Así, de estar utilizando un modelo de retornos financieros que se base en la distribución normal podría estar subestimándose la probabilidad de ocurrencia de eventos `extremos' en los retornos financieros. Para poner un ejemplo numérico: una bono puede tener un rendimiento esperado de 5\% del capital invertido al plazo de un año, con un desvío estándar del 1\%, de modo tal que con probabilidad del 99\% los retornos están entre 2\% y 8\%. Sin embargo, se han registrado varios eventos en los que se esperaban retornos como éstos y que, ex post, se registre un retorno sobre el capital invertido negativo.\footnote{Este ejemplo puede servir para ejemplificar la inadecuación de la distribución normal para modelar retornos de activos financieros, aunque el lector debería considerar que esta cuestión representa una rama de la literatura de macro-finanzas muy amplia. Algunos de los tópicos (no exhaustivos de esta literatura) que pueden ser de utilidad para el lector interesado en estos temas son los siguientes: en lo que respecta a las fallas que la distribución normal, una de las referencias más conocidas es Nassim Taleb (2007); sobre predicción de retornos de activos, véase la Hipótesis de Mercados Eficientes; para los vínculos entre retornos de activos y macroeconomía véase la literatura de \textit{consumption-based asset pricing}.} %agregar referencias Nassim TAleb Balck Swan, Canavos, el otro libro tel apunte teorico. Ejercicio de aplicación en R de calcular dist de retornos y ver el ajuste con normal!!!!!!! estaría muy bueno 
+
+Para intentar evitar situaciones como ésta, se puede recurrir a la utilización de contrastes no paramétricos. Éstos no hacen ningún supuesto acerca de la distribución de probabilidad de la población (llamada \textit{distribución subyacente}) de la que surge la muestra aleatoria. 
 
 Las técnicas no paramétricas pueden categorizarse --no excluyentemente-- en las siguientes categorías:
 	\begin{itemize}
@@ -58,16 +66,21 @@ Las técnicas no paramétricas pueden categorizarse --no excluyentemente-- en la
 \item \textbf{Métodos de distribución libre:} el estadístico utilizado presenta una distribución de probabilidad que no depende de la distribución de probabilidad de la población de la que se ha extraído la muestra que suministra información al estadístico.
 	\end{itemize}
 
-Las técnicas no paramétricas también difieren de los métodos estudiados anteriormente en que no suelen utilizar directamente la información muestral de los valores de la variable que es objeto de estudio, sino que se utiliza la frecuencia con la que aparecen dichos valores en la muestra, o su posición, orden o rango en una muestra ordenada. Para ejemplificar esto, recuérdese que en el cálculo de los estadísticos $t$, $F$ y otros, se utilizaban directamente los valores de las observaciones, y estos estadísticos también dependían de parámetros poblacionales (o de las estimaciones de los mismos a partir de los datos muestrales).
+Las técnicas no paramétricas también difieren de los métodos estudiados anteriormente en que no suelen utilizar directamente la información muestral de los valores de la variable que es objeto de estudio, sino que se utiliza la frecuencia con la que aparecen dichos valores en la muestra, o su posición, orden o rango en una muestra ordenada. Para ejemplificar esto, recuérdese que en el cálculo de los estadísticos $t$ se utilizan directamente los valores de las observaciones, y estos estadísticos también dependían de parámetros poblacionales (o de las estimaciones de los mismos a partir de los datos muestrales).\footnote{Piense en el caso en el que sea desea testear si una hipótesis de una media poblacional es igual a cero ?`qué información muestral utiliza para calcularlo?} 
 
-Otra diferencia entre ambas técnicas  --y para subrayar el hecho de que una no es superior a la otra, sino que la utilización de una u otra técnica depende de las características de los datos que se tienen y de la pregunta de investigación-- es que los contrastes no paramétricos son algo menos eficientes que los contrastes paramétricos cuando la población tiene una distribución normal, en el sentido de que poseen menor potencia\footnote{Recuérdese que esto es la probabilidad de no cometer error de tipo II, o de tomar una decisión correcta, rechazar la hipótesis nula cuando ésta es falsa.\linebreak $ 1-\beta = P[\mathrm{Rechazar  }H_0 / H_0  \mathrm{ Falsa}]$ } a un mismo nivel de significación $\alpha$, aunque son más eficientes cuando la distribución de la población no es normal.\par
+A fines prácticos, se estará utilizando el procedimiento desarrollado en la unidad de Test de Hipótesis, aunque los estadísticos de contraste a utilizar no utilizarán estimadores de parámetros poblcionales.
 
-En esta nota de clase sólo se explicarán contrastes basados en una sola muestra, aunque los hay de más de una muestra. Dentro de los tests de una muestra, sólo se estudiarán los contrastes de bondad de ajuste (Sección 2) y de independencia de atributos (Sección 3). Sin embargo, la inferencia no paramétrica no se agota en sólo estas pruebas, sino que también existen otros procedimientos, como pruebas de aleatoreidad, contrastes de localización y de asociación. Tampoco se hará un tratamiento exhaustivo de los temas que si se incluyen. \par
+Otra diferencia entre ambas técnicas  --y para subrayar el hecho de que una no es superior a la otra, sino que la utilización de una u otra técnica depende de las características de los datos que se tienen y de la pregunta de investigación-- es que los contrastes no paramétricos son algo menos eficientes que los contrastes paramétricos cuando la población tiene una distribución normal, en el sentido de que poseen menor potencia\footnote{Recuérdese que esto es la probabilidad de no cometer error de tipo II, o de tomar una decisión correcta, rechazar la hipótesis nula cuando ésta es falsa.\linebreak $ 1-\beta = P[\mathrm{Rechazar  }H_0 / H_0  \mathrm{ Falsa}]$} a un mismo nivel de significación $\alpha$, aunque son más eficientes cuando la distribución de la población no es normal.
 
-\section{Notación y algunas definiciones}
+En esta nota de clase sólo se explicarán contrastes basados en una sola muestra, aunque los hay de más de una muestra. Dentro de los tests de una muestra, sólo se estudiarán los contrastes de bondad de ajuste (Sección XX) y de independencia de atributos (Sección XX). Sin embargo, la inferencia no paramétrica no se agota en sólo estas pruebas, sino que también existen otros procedimientos --- sólo a fines ennumerativos, algunos de estos son: pruebas de aleatoreidad, contrastes de localización y contrastes de asociación. 
+
+El objetivo puntual de esta nota de clase será explicar los contrastes utilizados en (i) bondad de ajuste y (ii) independencia de atributos. 
+
+\section{Bondad de Ajuste}
+\subsection{Notación y algunas definiciones}
 	\begin{itemize}
 	\item $h$: número de clases de observaciones, indizados por $i = 1, \ldots, h$.
-	\item $k$: número de parámetros a estimar en un test Ji-Cuadrado
+	\item $k$: número de parámetros a estimar en un test
 	\item Frecuencia absoluta: número de veces que aparece un determinado valor de una variable $x_0$ en la muestra, se denota por $n_i$, y debe cumplirse que
 			\begin{equation*}
 			\sum_{i=1}^{h} n_i = n
@@ -82,36 +95,70 @@ En esta nota de clase sólo se explicarán contrastes basados en una sola muestr
 			N_h &= n_1 + n_2 + \ldots + n_h
 			\end{align*}
 	\item $f_0(x)$: Función de densidad teórica
-	\item $f(x)$: Función de densidad de la muestra
+	\item $f(x)$: Función de densidad empírica o de la muestra
 	\end{itemize}
 
 \section{Bondad de Ajuste}
-Cuando se habla de bondad de ajuste, se hace referencia a contrastes estadísticos que permiten probar qué tan bien un modelo estadístico se ajusta a los datos muestrales. El objetivo de estos contrastes es el de verificar si una muestra que contiene un conjunto de observaciones se puede suponer provienente de una población con cierta distribución de probabilidad que tiene una función de densidad teórica $f_0(x)$. Se llama $f(x)$ función de densidad empírica o de la muestra.\par
+Cuando se habla de \textit{bondad de ajuste}, se hace referencia a contrastes estadísticos que permiten probar qué tan bien un modelo estadístico se ajusta a los datos muestrales. El objetivo de estos contrastes es el de verificar si una muestra que contiene un conjunto de observaciones se puede suponer provienente de una población con cierta distribución de probabilidad que tiene una función de densidad teórica $f_0(x)$. Se llama $f(x)$ función de densidad de la muestra o función de densidad empírica.
 
 La hipótesis nula $H_0$ de estos contrastes es que el ajuste de la información de la muestra o función de densidad empírica $f(x)$ a un modelo estadístico o función de densidad $f_0(x)$ es \textit{bueno}, entendiéndose como que la muestra no provee evidencia para rechazar esta hipótesis nula. La hipótesis alternativa $H_1$ es el opuesto de este enunciado, justamente, que el ajuste de los datos muestrales al modelo teórico $f_0(x)$ \textit{no es bueno}, es decir, que éstos proveen información para decir que los datos \textit{no} se ajustan a esa función de densidad planteada.
-		\begin{align*}
-	H_0:  f(x) &= f_0(x)\\
-	H_1:  f(x) &\neq f_0(x)
-		\end{align*}
-\par
+
+\[
+  \mathrm{Test\; general:} \left.
+  \begin{cases}
+	H_0:  f(x) = f_0(x)\\
+	H_1:  f(x) \neq f_0(x)
+  \end{cases}
+  \right. 
+\]
 
 \subsection{Test Ji-Cuadrado}
 La hipótesis nula de este contraste es la recién explicitada. Puede aplicarse tanto a distribuciones poblaciones discretas como continuas, y con observaciones ordinales o nominales.
-		\begin{itemize}
-	\item Si $v.a.$ a ajustar es \textbf{discreta}, los datos se agrupan en una serie simple
-		%% insertar tablita (creo que es medio bardo, de última, imagen)
-		\item Si la $v.a.$ a ajustar es \textbf{continua}, los datos se agrupan en una serie de intervalos.
-	%% insertar tablita (creo que es medio bardo, de última, imagen)
-		\end{itemize}
+\begin{itemize}
+	\item Si la variable aleatoria a ajustar es \textbf{discreta}, los datos se agrupan en una serie simple. 
+	\begin{exmp}
+		Considérese el caso de un dado de seis caras. Cada vez que se lanza el dado, hay seis posibles resultados. Suponga que se repite el experimento 304 veces. Los datos se ordernarían de la siguiente manera.
+	\end{exmp} 
+	
+		\begin{table}[h]
+			\centering
+			\begin{tabular}{@{}cc@{}}
+			\toprule
+			Cara del dado ($x_i$) & Frecuencia ($n_i$) \\ \midrule
+			\die1  & 53               \\
+			\die2  & 51               \\
+			\die3  & 48               \\
+			\die4  & 43               \\
+			\die5  & 57               \\
+			\die6  & 52               \\ \midrule
+			Total ($n$)           & 304              \\ \bottomrule
+			\end{tabular}
+		\end{table} 
 
-La lógica del test es, clasificando los datos que se obtienen en cierto número de categorías, comparar las frecuencias observadas $n_i$ con las que se esperaría que ocurrieran si los datos surgieran de una población que sigue la función de densidad teórica $n_i^e = np_i $, siendo $p_i = \widehat{p(x_i)}$ la probabilidad de obtener la observación $x_i$ bajo el modelo de probabilidad teórico $f_0(x)$.
+	\item Si la variable aleatoria a ajustar es \textbf{continua}, los datos se agrupan en una serie de intervalos.
+	%% insertar tablita 
+\end{itemize}
 
 El estadístico de prubeba a utilizar será el \textit{estadístico Ji-Cuadrado de Pearson}, que sigue una distribución Ji-Cuadrado con $h-k-1$ grados de libertad.\footnote{Demostración en el Anexo.}
 	\begin{equation}
 		\sum_{i=1}^{h} \frac{(n_i - n_i^e)^2}{n_i^e} \sim \chi^2_{h-k-1}
 	\end{equation}
 
-Una cuestión no menor es que para poder aplicar el test debe cumplirse la siguiente condición\footnote{Esto se debe a que la distribución del estadístico es asintótica y no exacta.}:
+?`Cómo puede este estadístico de contraste proveer información para probar qué tanto se ajustan los datos a una distribución? Nótese que, en escencia, habiendo clasificado los datos muestrales en un número de categorías, se están compararado las frecuencias observadas  con las que se esperaría que ocurrieran si 3los datos surgieran de una población que sigue la función de densidad teórica. 
+
+Una forma matemática de introducir cierta medida de ``acumulación'' es la suma de términos cuadráticos, que es siempre mayor o igual a cero. De esta forma, estamos tomando la diferencia entre la frecuencia observada $n_i$ y la esperada $n_i^e$. La frecuencia esperada se calcula como $n_i^e = np_i$, siendo $p_i = \widehat{p(x_i)}$ la probabilidad de obtener la observación $x_i$ bajo el modelo de probabilidad teórico $f_0(x)$.
+
+Esta diferencia puede ser positiva o negativa, luego, tomando el cuadrado de esa diferencia, se obtiene una cantidad iguall a positiva o cero, de modo tal que no se cancelen diferencias positivas con diferencias negativas. 
+El estadístico sería cero sólo en el caso en que todas las frecuencias observadas sean iguales a las esperadas.
+
+%Poner grafico de distiribucion que se cancelen las diferencias y calcular el estadístico con y sin el cuadrado
+
+Luego, el cuadrado de la diferencia se divide por la frecuencia esperada para obtener una medida de si las diferencias son grandes o pequeñas respecto de lo que debieramos observar. 
+
+%Poner ejemplo numerico de diferencias grandes y chicas
+
+Una cuestión no menor es que para poder aplicar el test debe cumplirse la siguiente condición\footnote{Esto se debe a que la distribución del estadístico Ji-Cuadrado es asintótica y no exacta.}:
+
 	\begin{equation*}
 	n_i^e \geq 5
 	   \quad\text{ó}\quad
@@ -123,6 +170,7 @@ De no cumplirse, deberán reagruparse las clases de modo tal que todas las frecu
 Recuérdese la forma de la distribución Ji-Cuadradado. Esta posee un sesgo hacia la derecha, más notorio a menos grados de libertad.\par
 
 %% Distribución Ji Cuadrado a distintos g.l.
+
 \begin{tikzpicture}[x=1pt,y=1pt]
 
 \definecolor{fillColor}{RGB}{255,255,255}
@@ -650,8 +698,10 @@ Recuérdese la forma de la distribución Ji-Cuadradado. Esta posee un sesgo haci
 \end{scope}
 \end{tikzpicture}
 
-La pregunta relevante ahora es \textquestiondown De qué modo provee este estadístico evidencia para rechazar o no la hipótesis nula $H_0$? Obsérvese que el numerador del estadístico de prueba es una medida de la discrepancia entre lo observado y lo esperado, elevada al cuadrado para evitar que diferencias positivas y negativas se compensen entre sí, y penalizando más a discrepancias más grandes.\footnote{La diferencia al cuadrado es, ciertamente, más manejable que el valor absoluto de la diferencia} Entonces, a mayores diferencias, mayores valores del estadístico, lo que implica que se estará en un punto "más a la derecha" del dominio de la distribución Ji-Cuadrado. \textquestiondown Qué implica esto para la decisión estadística?\par
+%Matchear con lo que puse antes.
+La pregunta relevante ahora es ?`de qué modo provee este estadístico evidencia para rechazar o no la hipótesis nula $H_0$? Obsérvese que el numerador del estadístico de prueba es una medida de la discrepancia entre lo observado y lo esperado, elevada al cuadrado para evitar que diferencias positivas y negativas se compensen entre sí, y penalizando más a discrepancias más grandes.\footnote{La diferencia al cuadrado es, ciertamente, más manejable que el valor absoluto de la diferencia} Entonces, a mayores diferencias, mayores valores del estadístico, lo que implica que se estará en un punto "más a la derecha" del dominio de la distribución Ji-Cuadrado. \textquestiondown Qué implica esto para la decisión estadística?\par
 
+%Regla de decision
 Si se decide utilizando un nivel de significación $\alpha = P[\mathrm{R }H_0 / H_0\mathrm{ V}]$ dado, típicamente $\alpha = 0.10$, entonces, \textit{ceteris paribus} los grados de libertad, habrá más chances de que se esté dentro de la región crítica, es decir, de que haya evidencia estadística de que las distribución empírica $f(x)$ es significativamente diferente de la distribución teórica $f_0(x)$, permitiendo rechazar la hipótesis nula $H_0$.\par
 
 Por otro lado, recuérdese que el \textit{p-valor} es el mínimo valor de $\alpha$ para el cual se puede rechazar $H_0$ para la muestra elegida. La regla de decisión en este caso era
@@ -5574,6 +5624,9 @@ Falta armar esto
 
 \subsection{Test de Kolmogorov-Smirnov}
 
+Otro test 
+
+
 \begin{equation}
 	\varepsilon = \Big| F_i - F_0 \Big|
 \end{equation}
@@ -5583,6 +5636,8 @@ Reinhart \& Rogoff en su libro de 2009 \textit{This Time is Different} utilizan 
 \end{exmp}
 
 
+\section{Independencia de atributos}
+
 \section{Anexo}
 \subsection{Deducción y demostración de la distribución del estadístico Ji-Cuadrado de Pearson}
 \subsection{Código de los gráficos en \textsf{R}}
@@ -5590,7 +5645,7 @@ Reinhart \& Rogoff en su libro de 2009 \textit{This Time is Different} utilizan 
 
 
 
-\noindent \textbf{Distribución Ji-Cuadrado}\par
+\noindent \textbf{Distribución Ji-Cuadrado}
 
 \begin{lstlisting}
 
@@ -5614,7 +5669,7 @@ legend('topright',
 \end{lstlisting}
 
 
-\noindent \textbf{Región crítica del test Ji-Cuadrado}\par
+\noindent \textbf{Región crítica del test Ji-Cuadrado}
 
 %% No puede tener tildes o no corre!!!!!
 \begin{lstlisting}
@@ -5649,5 +5704,20 @@ legend('center',
        expression(gl==6, '$\\alpha$'==0.10),
 
 \end{lstlisting}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{@{}ccccccc@{}}
+	\toprule
+	Cara  & \$n\_i\# & $p(x_i)$   & $n_i^e$ & $n_i-n_i^e$ & $(n_i-n_i^e)^ 2$ & $(n_i-n_i^e)^ 2 / n_i^e$         \\ \midrule
+	As    & 70       & 0.167      & 100.0 & -30.00      & 900.00           & 9.00                           \\
+	K     & 115      & 0.167      & 100.0 & 15.00       & 225.00           & 2.25                           \\
+	Q     & 122      & 0.167      & 100.0 & 22.00       & 484.00           & 4.84                           \\
+	J     & 98       & 0.167      & 100.0 & -2.00       & 4.00             & 0.04                           \\
+	Rojo  & 85       & 0.167      & 100.0 & -15.00      & 225.00           & 2.25                           \\
+	Negro & 110      & 0.167      & 100.0 & 10.00       & 100.00           & 1.00                             \\ \midrule
+	$h$=6 & $n$=600  & \textbf{1} &         &             &                  & $\varepsilon_M =$          19.380 \\ \bottomrule
+	\end{tabular}
+	\end{table}
 
 \end{document}
